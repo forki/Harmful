@@ -1,0 +1,25 @@
+type project
+title
+    Harmful
+owners
+    theor
+authors 
+    theor
+projectUrl
+    http://github.com/theor/Harmful
+iconUrl
+    https://raw.githubusercontent.com/theor/Harmful/master/docs/files/img/logo.png
+licenseUrl
+    http://github.com/theor/Harmful/blob/master/LICENSE.txt
+requireLicenseAcceptance
+    false
+copyright
+    Copyright 2015
+tags
+    
+summary
+    Quick action runner
+description
+    Description not set
+
+
