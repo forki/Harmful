@@ -25,8 +25,22 @@ GITHUB
   remote: fsharp/FAKE
     modules/Octokit/Octokit.fsx (5a9789b05e5713b55ea996baf8feb3561b6b926d)
       Octokit
+GROUP Core
+NUGET
+  remote: https://www.nuget.org/api/v2
+    FSharp.Data (2.3)
+      Zlib.Portable (>= 1.11) - framework: portable-net45+sl5+win8, portable-net45+win8, portable-net45+win8+wp8+wpa81
+    Zlib.Portable (1.11) - framework: portable-net45+sl5+win8, portable-net45+win8, portable-net45+win8+wp8+wpa81
+
 GROUP Test
 NUGET
   remote: https://www.nuget.org/api/v2
     NUnit (2.6.4)
     NUnit.Runners (2.6.4)
+GITHUB
+  remote: fsprojects/FsUnit
+    src/FsUnit.NUnit/FsUnitTyped.fs (a56aa15e019b044574b50b95ad14c8815a22716a)
+GROUP UI
+NUGET
+  remote: https://www.nuget.org/api/v2
+    FsXaml.Wpf (2.1)

@@ -11,8 +11,17 @@ group Build
 
   github fsharp/FAKE modules/Octokit/Octokit.fsx
 
+group Core
+  source https://nuget.org/api/v2
+  nuget FSharp.Data
+
+group UI
+  source https://nuget.org/api/v2
+  nuget FsXaml.Wpf
+
 group Test
   source https://nuget.org/api/v2
-  
+
+  github fsprojects/FsUnit src/FsUnit.NUnit/FsUnitTyped.fs
   nuget NUnit ~> 2
   nuget NUnit.Runners ~> 2

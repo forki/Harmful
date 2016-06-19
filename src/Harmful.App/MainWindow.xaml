@@ -1,0 +1,9 @@
+﻿<Window
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:auto="clr-namespace:FeserWard.Controls;assembly=Intellibox"
+    Title="MainWindow" Height="50" Width="525" WindowStyle="None">
+	<Grid>
+		<auto:Intellibox x:Name="searchBox"></auto:Intellibox>
+	</Grid>
+</Window>
