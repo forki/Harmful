@@ -85,13 +85,5 @@ module Program =
         w.searchBox.Text <- "case 123456"
         w.searchBox.PreviewKeyDown.Add(keyDown state)
         w.Loaded.Add (loaded w)
-//        w.searchBox.DataProvider <- SearchProvider(providers)
-//        let c = FeserWard.Controls.IntelliboxColumn()
-//        c.
-//        w.searchBox.Columns.Add(c)
-//        let b = Data.Binding()
-//        b.Path <- PropertyPath(".")
-//        b.Converter <- ItemConverter()
-//        w.searchBox.DisplayedValueBinding <- b
 
         app.Run(w)
