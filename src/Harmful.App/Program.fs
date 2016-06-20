@@ -16,6 +16,7 @@ module Program =
     open Harmful
     open System
     open FsXaml
+    open Redux
 
     type Options = { pluginPaths:string }
     let loadProviders (opt:Options) : Types.IProvider list =
@@ -50,23 +51,45 @@ module Program =
 //            res
 
     type State = { item: Types.IItem option }
-
-    let loaded (w:MainWindow) x =
-        w.searchBox.Focus() |> ignore
-        ()
+    with
+        static member empty = { item = None }
 
     type Action =
     | Exec of Types.IItem
     | Move of bool
     | Exit
+    with 
+        interface IAction
 
-    let keyDown state (args:KeyEventArgs) =
+    let reducer state (action:IAction) =
+        match action with
+        | :? Action as a ->
+            match a with
+            | Exit -> Application.Current.Shutdown(0); state
+            | Exec i -> state
+            | Move i -> state
+            | _ -> state
+        | _ -> state
+    
+    type App() =
+        inherit Application()
+        static member val store:IStore<State> = Store<State>(Reducer reducer, initialState=State.empty) :> IStore<State>
+        static member dispatch (a:Action) = App.store.Dispatch(a) |> ignore
+
+    let render x = ()
+
+    let loaded (w:MainWindow) x =
+        w.searchBox.Focus() |> ignore
+        App.store.Subscribe render |> ignore
+        ()
+
+
+    let keyDown (args:KeyEventArgs) =
         match args.Key with
-        | Key.Escape -> Application.Current.Shutdown(0)
-        | Key.Up
-        | Key.Enter -> match (!state).item with
-                       | Some i -> printfn "ENTER"
-                       | None -> ()
+        | Key.Escape -> App.dispatch Exit
+        | Key.Up -> App.dispatch(Move true)
+        | Key.Down -> App.dispatch(Move false)
+        | Key.Enter -> App.store.GetState().item |> Option.iter (Exec >> App.dispatch)
         | _ -> ()
 
 
@@ -79,11 +102,10 @@ module Program =
         let opt = { pluginPaths="" }
         let providers = loadProviders opt
         let sp = SearchProvider(providers)
-        let state = ref { item = None }
         w.list.ItemsSource <- []
         w.searchBox.TextChanged.Add (fun x -> sp.DoSearch(w.searchBox.Text, w.list))
         w.searchBox.Text <- "case 123456"
-        w.searchBox.PreviewKeyDown.Add(keyDown state)
+        w.searchBox.PreviewKeyDown.Add(keyDown)
         w.Loaded.Add (loaded w)
 
         app.Run(w)
