@@ -1,4 +1,4 @@
 FSharp.Core
 
 group UI
-    FsXaml.Wpf
+  Redux.NET

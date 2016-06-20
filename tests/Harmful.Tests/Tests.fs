@@ -29,11 +29,11 @@ let ``fogbugz login`` () =
 
 [<Test>]
 let ``fogbugz case`` () =
-    let p = Fogbugz.Provider() :> Types.IProvider<Fogbugz.CaseItem>
+    let p = Fogbugz.Provider() :> Types.IProvider
     
-    let res = p.SearchItems (Types.Search ["case"; "123456"]) |> Async.RunSynchronously
+    let res = p.Search(Types.Search ["case"; "123456"]) |> Async.RunSynchronously
     Seq.length res |> shouldEqual 1
-    (Seq.head res).case |> shouldEqual 123456
+    (Seq.head res :?> Fogbugz.CaseItem).case |> shouldEqual 123456
 
 [<Test>]
 let ``usecase`` () =

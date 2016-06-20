@@ -11,19 +11,19 @@ namespace Harmful
 module Types =
     type IItem =
         abstract member Text : string
-        abstract member Icon : Unit option
+//        abstract member Icon : Unit option
     and Search = Search of string list
     and [<AbstractClass>] IProvider() =
         abstract member Search: Search -> Async<IItem seq>
         abstract member Exec: IItem -> Command
-    and [<AbstractClass>] IProvider<'a when 'a :> IItem>() =
-        inherit IProvider()
-        override x.Search s =
-            async {
-                let! is = x.SearchItems s
-                return is |> Seq.cast<IItem>
-            }
-        abstract member SearchItems: Search -> Async<'a seq>
+//    and [<AbstractClass>] IProvider<'a when 'a :> IItem>() =
+//        inherit IProvider()
+//        override x.Search s =
+//            async {
+//                let! is = x.SearchItems s
+//                return is |> Seq.cast<IItem>
+//            }
+//        abstract member SearchItems: Search -> Async<'a seq>
     and Command = Exec of string list
 
 module Fogbugz =
@@ -33,7 +33,14 @@ module Fogbugz =
     with
         interface IItem with
             member x.Text = sprintf "Case %i: %s" x.case x.title
-            member x.Icon = None
+//            member x.Icon = None
+
+    type ActionITem = { action:string
+                        arg:string
+                        f: string -> Unit }
+    with
+        interface IItem with
+            member x.Text = sprintf "%s: %s" x.action x.arg
 
     module Api =
         type LoginProvider = FSharp.Data.XmlProvider<"""<?xml version="1.0" encoding="UTF-8"?><response><token><![CDATA[82ovqq2bb0ulvsjgitaohf8ugu52gs]]></token></response>""">
@@ -73,20 +80,30 @@ module Fogbugz =
             }
 
     type Provider() =
-        inherit IProvider<CaseItem>()
+        inherit IProvider()
 
-        override x.SearchItems (Search tokens) =
+        override x.Search(Search tokens) : Async<seq<IItem>> =
             async {
-                return match tokens with
-                        | "case" :: s :: []  ->
-                            match System.Int32.TryParse s with
-                            | true,i -> seq {  yield { case = i; title = "" } }
-                            | _ -> Seq.empty
-                        | _ -> Seq.empty
+                return seq {
+                    match tokens with
+                    | "case" :: s :: []  ->
+                        match System.Int32.TryParse s with
+                        | true,i -> yield { case = i; title = "asd" } :> IItem
+                        | _ -> ()
+                    | _ -> ()
+                    yield { action="Search"; arg = tokens.Head; f = fun _ -> () } :> IItem
+                }
             }
         override x.Exec i =
             match i with
             | :? CaseItem as ci -> Exec [sprintf "http://fogbugz.unity3d.com/default.asp?%i" ci.case ]
+
+//module Caching =
+//    open System.Runtime.Caching
+//
+//    type t = private { impl: MemoryCache }
+//    let empty (name:string) = { impl = new MemoryCache(name) }
+//    let add k v t = t.impl.
 
 module Library =
 

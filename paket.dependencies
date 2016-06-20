@@ -18,6 +18,7 @@ group Core
 group UI
   source https://nuget.org/api/v2
   nuget FsXaml.Wpf
+  nuget Redux.NET
 
 group Test
   source https://nuget.org/api/v2
