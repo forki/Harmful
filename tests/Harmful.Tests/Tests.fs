@@ -5,12 +5,6 @@ open Harmful.Fogbugz
 open NUnit.Framework
 open FsUnitTyped
 
-[<Test>]
-let ``hello returns 42`` () =
-  let result = Library.hello 42
-  printfn "%i" result
-  Assert.AreEqual(42,result)
-
 (* case 123456
    ob ui/dev
    kb ui/dev
@@ -29,8 +23,11 @@ let ``fogbugz login`` () =
 
 [<Test>]
 let ``fogbugz case`` () =
-    let p = Fogbugz.Provider() :> Types.IProvider
-    
+    let c = { user = "theor@unity3d.com"
+              apiUrl ="http://fogbugz.unity3d.com/api.asp"
+              password = (System.Environment.GetEnvironmentVariable "FBZPASS") }
+    let p = Fogbugz.Provider(c) :> Types.IProvider
+
     let res = p.Search(Types.Search ["case"; "123456"]) |> Async.RunSynchronously
     Seq.length res |> shouldEqual 1
     (Seq.head res :?> Fogbugz.CaseItem).case |> shouldEqual 123456

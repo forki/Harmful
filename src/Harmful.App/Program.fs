@@ -73,6 +73,7 @@ module Program =
     open System.Reactive.Linq
     open FSharp.Control.Reactive
     open Harmful
+    open Harmful.Fogbugz
     open System
     open FsXaml
     open Redux
@@ -96,7 +97,10 @@ module Program =
 
     type Options = { pluginPaths:string }
     let loadProviders (opt:Options) : Types.IProvider list =
-        let p = Fogbugz.Provider()// :> Types.IProvider
+        let c = { user = "theor@unity3d.com"
+                  apiUrl ="http://fogbugz.unity3d.com/api.asp"
+                  password = (System.Environment.GetEnvironmentVariable "FBZPASS") }
+        let p = Fogbugz.Provider(c)// :> Types.IProvider
         [ p ]
 
 

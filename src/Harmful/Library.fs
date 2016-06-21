@@ -89,7 +89,10 @@ module Fogbugz =
                 }
             }
 
-    type Provider() =
+    type Config = { apiUrl:string
+                    user:string
+                    password:string }
+    type Provider(c:Config) =
         inherit IProvider()
 
         let searchFmt = "http://fogbugz.unity3d.com/default.asp?pre=preMultiSearch&pg=pgList&pgBack=pgSearch&search=2&searchFor="
@@ -99,15 +102,28 @@ module Fogbugz =
               f = fun a -> Exec [sprintf "%s%s" searchFmt a] } :> IItem
         override x.Search(Search tokens) : Async<seq<IItem>> =
             async {
-                return seq {
+                let search = searchAction tokens :: []
+                let case =
                     match tokens with
-                    | "case" :: s :: []  ->
-                        match System.Int32.TryParse s with
-                        | true,i -> yield { case = i; title = "asd" } :> IItem
-                        | _ -> ()
-                    | _ -> ()
-                    yield searchAction tokens
-                }
+                        | "case" :: s :: []  ->
+                            match System.Int32.TryParse s with
+                            | true,i ->
+                                let api = Api.from c.apiUrl
+                                Some <| async {
+                                    let! api = api |> Api.login c.user c.password
+                                    let! cases = api |> Api.search i
+                                    return cases
+                                }
+                            | _ -> None
+                        | _ -> None
+                match case with
+                | None -> return search |> Seq.ofList
+                | Some casesAsync ->
+                    let! cases = casesAsync
+                    let cases = cases |> Seq.cast<IItem> |> List.ofSeq
+                    return List.append cases search |> Seq.ofList
+                
+//                return List.concat (Option.toList case) search
             }
         override x.Exec i =
             match i with
