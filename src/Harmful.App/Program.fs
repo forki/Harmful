@@ -17,9 +17,10 @@ module Arch =
 
     type State = { selectedIndex: int
                    items: IItem array
-                   providers: IProvider list }
+                   providers: IProvider list
+                   tokenSource: System.Threading.CancellationTokenSource option }
     with
-        static member empty providers = { selectedIndex = -1; items = Array.empty; providers = providers }
+        static member empty providers = { selectedIndex = -1; items = Array.empty; providers = providers; tokenSource = None }
 
 
     type Action =
@@ -33,7 +34,7 @@ module Arch =
     let fetchProviders (searchTerm:string) (providers:Types.IProvider list) =
         let fetchProvider (s:string) (p:Types.IProvider) =
             async {
-                let! a = p.Search (Types.Search (List.ofArray <| s.Split([|' '|], StringSplitOptions.RemoveEmptyEntries)))
+                let! a = p.Search (Types.Search (List.ofArray <| s.Split([|' '|], StringSplitOptions.RemoveEmptyEntries)))// |> Seq.head
                 return a |> Array.ofSeq
             }
         async {
@@ -42,6 +43,7 @@ module Arch =
         }
 
     let reducer dispatch state (action:IAction) =
+        printfn "%A" action
         match action with
         | :? Action as a ->
             match a with
@@ -55,12 +57,18 @@ module Arch =
                 if l = 0 then state
                 else { state with selectedIndex = (state.selectedIndex + (if i then -1 else 1) + l) % l }
             | Search s ->
-                async {
-                    let! _ = Async.SwitchToThreadPool()
+                state.tokenSource |> Option.iter (fun t -> printfn "    cancel %s" s; t.Cancel())
+                let cts = new System.Threading.CancellationTokenSource()
+                let a,b = System.Threading.ThreadPool.GetAvailableThreads()
+                printfn "%i/%i" b a
+                Async.StartAsTask(async {
+                    printfn "  start %A" s
+                    use! cn = Async.OnCancel(fun () -> printfn "    Cancelled %s" s)
+//                    let! _ = Async.SwitchToThreadPool()
                     let! items = fetchProviders s state.providers
                     dispatch (Result items)
-                } |> Async.StartImmediate
-                state
+                }, cancellationToken=cts.Token) |> ignore
+                { state with tokenSource = Some cts }
             | Result items -> { state with items = Array.ofSeq items
                                            selectedIndex = 0 }
             | _ -> state
@@ -81,7 +89,7 @@ module Program =
     type MainWindow = XAML<"MainWindow.xaml">
 
     let render (w:MainWindow) (x:Arch.State) =
-        printfn "RENDER %i" System.Threading.Thread.CurrentThread.ManagedThreadId
+//        printfn "RENDER %i" System.Threading.Thread.CurrentThread.ManagedThreadId
         w.list.ItemsSource <- x.items
         w.list.SelectedIndex <- x.selectedIndex
         ()
@@ -114,7 +122,6 @@ module Program =
         | _ -> ()
 
     let loaded (w:MainWindow) x =
-        printfn "UI %i" System.Threading.Thread.CurrentThread.ManagedThreadId
         let ctx = System.Windows.Threading.DispatcherSynchronizationContext.Current
         App.init ctx
         w.searchBox.PreviewKeyDown.Add(keyDown)

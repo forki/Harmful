@@ -1,13 +1,5 @@
 namespace Harmful
 
-/// Documentation for my library
-///
-/// ## Example
-///
-///     let h = Library.hello 1
-///     printfn "%d" h
-///
-
 module Types =
     type IItem =
         abstract member Text : string
@@ -16,14 +8,6 @@ module Types =
     and [<AbstractClass>] IProvider() =
         abstract member Search: Search -> Async<IItem seq>
         abstract member Exec: IItem -> Command
-//    and [<AbstractClass>] IProvider<'a when 'a :> IItem>() =
-//        inherit IProvider()
-//        override x.Search s =
-//            async {
-//                let! is = x.SearchItems s
-//                return is |> Seq.cast<IItem>
-//            }
-//        abstract member SearchItems: Search -> Async<'a seq>
     and Command = Exec of string list
 
 module Commands =
@@ -69,7 +53,7 @@ module Fogbugz =
 
         let login(u:string)(p:string)(api:t) =
             async {
-                let! resp = Http.AsyncRequestString(api.url, query=["cmd","logon";"email",u;"password",p])
+                let resp = Http.RequestString(api.url, query=["cmd","logon";"email",u;"password",p])
                 let xmlP = LoginProvider.Parse(resp)
                 return { api with token = xmlP.Token }
             }
@@ -80,6 +64,7 @@ module Fogbugz =
                                 "q",id.ToString()
                                 "cols", "sTitle"
                                 "max", "50"]
+                printf "\nSearching: %A" id
                 let! resp = Http.AsyncRequestString(api.url, query=qparams)
                 printf "\nSearch: %A" resp
                 let cases = CaseProvider.Parse resp
@@ -94,15 +79,18 @@ module Fogbugz =
                     password:string }
     type Provider(c:Config) =
         inherit IProvider()
-
+        let init() =
+            let api = Api.from c.apiUrl
+            api |> Api.login c.user c.password //|> Async.star
+        let loginAsync = init()
         let searchFmt = "http://fogbugz.unity3d.com/default.asp?pre=preMultiSearch&pg=pgList&pgBack=pgSearch&search=2&searchFor="
         let searchAction tokens =
             { action="Search"
               arg = String.concat " " tokens
               f = fun a -> Exec [sprintf "%s%s" searchFmt a] } :> IItem
         override x.Search(Search tokens) : Async<seq<IItem>> =
+            let search = searchAction tokens :: []
             async {
-                let search = searchAction tokens :: []
                 let case =
                     match tokens with
                         | "case" :: s :: []  ->
@@ -110,7 +98,8 @@ module Fogbugz =
                             | true,i ->
                                 let api = Api.from c.apiUrl
                                 Some <| async {
-                                    let! api = api |> Api.login c.user c.password
+                                    let! api = loginAsync
+//                                        let! _ = Async.Sleep 3000
                                     let! cases = api |> Api.search i
                                     return cases
                                 }
@@ -122,8 +111,6 @@ module Fogbugz =
                     let! cases = casesAsync
                     let cases = cases |> Seq.cast<IItem> |> List.ofSeq
                     return List.append cases search |> Seq.ofList
-                
-//                return List.concat (Option.toList case) search
             }
         override x.Exec i =
             match i with
