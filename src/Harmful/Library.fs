@@ -26,6 +26,16 @@ module Types =
 //        abstract member SearchItems: Search -> Async<'a seq>
     and Command = Exec of string list
 
+module Commands =
+    open System.Diagnostics
+    open Types
+
+    let exec cmd =
+        match cmd with
+        | Exec cmds ->
+            let _ = Process.Start (ProcessStartInfo(cmds.Head, String.concat " " cmds.Tail))
+            ()
+
 module Fogbugz =
     open Types
     type CaseItem = { case:int
@@ -37,7 +47,7 @@ module Fogbugz =
 
     type ActionITem = { action:string
                         arg:string
-                        f: string -> Unit }
+                        f: string -> Command }
     with
         interface IItem with
             member x.Text = sprintf "%s: %s" x.action x.arg
@@ -82,6 +92,11 @@ module Fogbugz =
     type Provider() =
         inherit IProvider()
 
+        let searchFmt = "http://fogbugz.unity3d.com/default.asp?pre=preMultiSearch&pg=pgList&pgBack=pgSearch&search=2&searchFor="
+        let searchAction tokens =
+            { action="Search"
+              arg = String.concat " " tokens
+              f = fun a -> Exec [sprintf "%s%s" searchFmt a] } :> IItem
         override x.Search(Search tokens) : Async<seq<IItem>> =
             async {
                 return seq {
@@ -91,12 +106,13 @@ module Fogbugz =
                         | true,i -> yield { case = i; title = "asd" } :> IItem
                         | _ -> ()
                     | _ -> ()
-                    yield { action="Search"; arg = tokens.Head; f = fun _ -> () } :> IItem
+                    yield searchAction tokens
                 }
             }
         override x.Exec i =
             match i with
             | :? CaseItem as ci -> Exec [sprintf "http://fogbugz.unity3d.com/default.asp?%i" ci.case ]
+            | :? ActionITem as i -> i.f i.arg
 
 //module Caching =
 //    open System.Runtime.Caching
@@ -104,11 +120,3 @@ module Fogbugz =
 //    type t = private { impl: MemoryCache }
 //    let empty (name:string) = { impl = new MemoryCache(name) }
 //    let add k v t = t.impl.
-
-module Library =
-
-  /// Returns 42
-  ///
-  /// ## Parameters
-  ///  - `num` - whatever
-  let hello num = 42

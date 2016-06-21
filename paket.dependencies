@@ -14,11 +14,12 @@ group Build
 group Core
   source https://nuget.org/api/v2
   nuget FSharp.Data
+  nuget Redux.NET
+  nuget FSharp.Control.Reactive
 
 group UI
   source https://nuget.org/api/v2
   nuget FsXaml.Wpf
-  nuget Redux.NET
 
 group Test
   source https://nuget.org/api/v2

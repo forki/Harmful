@@ -28,22 +28,12 @@ GITHUB
 GROUP Core
 NUGET
   remote: https://www.nuget.org/api/v2
+    FSharp.Control.Reactive (3.4.1)
+      Rx-Core (>= 2.2.5)
+      Rx-Interfaces (>= 2.2.5)
+      Rx-Linq (>= 2.2.5)
     FSharp.Data (2.3)
       Zlib.Portable (>= 1.11) - framework: portable-net45+sl5+win8, portable-net45+win8, portable-net45+win8+wp8+wpa81
-    Zlib.Portable (1.11) - framework: portable-net45+sl5+win8, portable-net45+win8, portable-net45+win8+wp8+wpa81
-
-GROUP Test
-NUGET
-  remote: https://www.nuget.org/api/v2
-    NUnit (2.6.4)
-    NUnit.Runners (2.6.4)
-GITHUB
-  remote: fsprojects/FsUnit
-    src/FsUnit.NUnit/FsUnitTyped.fs (a56aa15e019b044574b50b95ad14c8815a22716a)
-GROUP UI
-NUGET
-  remote: https://www.nuget.org/api/v2
-    FsXaml.Wpf (2.1)
     Redux.NET (0.5)
       Rx-Main (>= 2.2.5)
     Rx-Core (2.2.5)
@@ -60,3 +50,17 @@ NUGET
     Rx-PlatformServices (2.2.5)
       Rx-Core (>= 2.2.5)
       Rx-Interfaces (>= 2.2.5)
+    Zlib.Portable (1.11) - framework: portable-net45+sl5+win8, portable-net45+win8, portable-net45+win8+wp8+wpa81
+
+GROUP Test
+NUGET
+  remote: https://www.nuget.org/api/v2
+    NUnit (2.6.4)
+    NUnit.Runners (2.6.4)
+GITHUB
+  remote: fsprojects/FsUnit
+    src/FsUnit.NUnit/FsUnitTyped.fs (a56aa15e019b044574b50b95ad14c8815a22716a)
+GROUP UI
+NUGET
+  remote: https://www.nuget.org/api/v2
+    FsXaml.Wpf (2.1)

@@ -1,5 +1,7 @@
 FSharp.Core
 
-group UI
+group Core
+  FSharp.Control.Reactive
   Redux.NET
+group UI
   FsXaml.Wpf
