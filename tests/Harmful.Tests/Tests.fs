@@ -15,7 +15,7 @@ open FsUnitTyped
 [<Test>]
 let ``fogbugz login`` () =
     let api = Api.from "http://fogbugz.unity3d.com/api.asp"
-    let api = api |> Fogbugz.Api.login "theor@unity3d.com" (System.Environment.GetEnvironmentVariable "FBZPASS") |> Async.RunSynchronously
+    let api = api |> Fogbugz.Api.login "theor@unity3d.com" (System.Environment.GetEnvironmentVariable "FBZPASS")
     printfn "%s" api.token
     let cases = api |> Fogbugz.Api.search 806120 |> Async.RunSynchronously
     printfn "%A" cases

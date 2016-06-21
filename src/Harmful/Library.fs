@@ -52,11 +52,9 @@ module Fogbugz =
         let from s : t = { url = s; token = "" }
 
         let login(u:string)(p:string)(api:t) =
-            async {
-                let resp = Http.RequestString(api.url, query=["cmd","logon";"email",u;"password",p])
-                let xmlP = LoginProvider.Parse(resp)
-                return { api with token = xmlP.Token }
-            }
+            let resp = Http.RequestString(api.url, query=["cmd","logon";"email",u;"password",p])
+            let xmlP = LoginProvider.Parse(resp)
+            { api with token = xmlP.Token }
         let search (id:int) (api:t) =
             async {
                 let qparams = [ "token", api.token
@@ -82,7 +80,7 @@ module Fogbugz =
         let init() =
             let api = Api.from c.apiUrl
             api |> Api.login c.user c.password //|> Async.star
-        let loginAsync = init()
+        let api = init()
         let searchFmt = "http://fogbugz.unity3d.com/default.asp?pre=preMultiSearch&pg=pgList&pgBack=pgSearch&search=2&searchFor="
         let searchAction tokens =
             { action="Search"
@@ -96,9 +94,7 @@ module Fogbugz =
                         | "case" :: s :: []  ->
                             match System.Int32.TryParse s with
                             | true,i ->
-                                let api = Api.from c.apiUrl
                                 Some <| async {
-                                    let! api = loginAsync
 //                                        let! _ = Async.Sleep 3000
                                     let! cases = api |> Api.search i
                                     return cases
